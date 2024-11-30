@@ -41,3 +41,40 @@ if __name__ == "__main__":
     for email in emails:
         print(email)
 
+class TestFindEmails(unittest.TestCase):
+    def test_find_emails_in_string(self):
+        text = "Контакты: test.email@example.com, info@domain.org, fake-email@fake."
+        result = find_emails(text)
+        expected = ["test.email@example.com", "info@domain.org"]
+        self.assertEqual(result, expected)
+
+    def test_find_emails_in_file(self):
+        with open("test_file.txt", "w", encoding="utf-8") as file:
+            file.write("Email: example@mail.com and admin@site.net.")
+        result = find_emails("test_file.txt", from_file=True)
+        expected = ["example@mail.com", "admin@site.net"]
+        self.assertEqual(result, expected)
+
+    def test_find_emails_on_webpage(self):
+        url = "https://www.example.com"
+        mock_html = "<html><body>Email: contact@website.com</body></html>"
+
+        # Мокирование запроса
+        def mock_get(*args, **kwargs):
+            class MockResponse:
+                def __init__(self, text):
+                    self.text = text
+
+                def raise_for_status(self):
+                    pass
+
+            return MockResponse(mock_html)
+
+        requests.get = mock_get
+        result = find_emails(url, from_url=True)
+        expected = ["contact@website.com"]
+        self.assertEqual(result, expected)
+
+
+if __name__ == "__main__":
+    unittest.main()
