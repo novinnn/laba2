@@ -25,3 +25,19 @@ def find_emails(source, from_file=False, from_url=False):
     emails = re.findall(email_regex, content)
     return emails
 
+# Пример использования
+if __name__ == "__main__":
+    user_input = input("Введите текст, URL или путь к файлу: ")
+    mode = input("Выберите режим (string/file/url): ").strip().lower()
+
+    if mode == "file":
+        emails = find_emails(user_input, from_file=True)
+    elif mode == "url":
+        emails = find_emails(user_input, from_url=True)
+    else:
+        emails = find_emails(user_input)
+
+    print("Найденные email-адреса:")
+    for email in emails:
+        print(email)
+
