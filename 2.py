@@ -2,6 +2,7 @@ import re
 import requests
 import unittest
 import os
+import tldextract
 
 
 def find_emails(source, from_file=False, from_url=False):
@@ -21,15 +22,25 @@ def find_emails(source, from_file=False, from_url=False):
         # Работа с переданной строкой
         content = source
 
-    # Поиск email-адресов
+    # Поиск email-адресов@
     emails = re.findall(email_regex, content)
-    return emails
+
+    # Фильтрация по доменам
+    valid_emails = []
+    for email in emails:
+        domain = email.split('@')[1]
+        # Проверка домена с помощью tldextract
+        ext = tldextract.extract(domain)
+        if ext.domain and ext.suffix:  # Проверка на существующий домен и TLD
+            valid_emails.append(email)
+
+    return valid_emails
 
 
 # Пример использования
 if __name__ == "__main__":
     user_input = input("Введите текст, URL или путь к файлу: ")
-    mode = input("Выберите режим (string/file/url): ").strip().lower()
+    mode = input("Выберите режим (string/file): ").strip().lower()
 
     if mode == "file":
         emails = find_emails(user_input, from_file=True)
@@ -60,13 +71,6 @@ class TestFindEmails(unittest.TestCase):
             self.assertEqual(result, expected)
         finally:
             os.remove(temp_file)
-
-    def test_find_emails_on_webpage(self):
-        # Используйте реальный URL, например:
-        url = "https://www.example.com"  # Например, замените на URL вашей веб-страницы
-        result = find_emails(url, from_url=True)
-        expected = ["contact@website.com"]  # Этот результат будет зависеть от содержимого страницы
-        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":
