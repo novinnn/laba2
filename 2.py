@@ -1,10 +1,10 @@
 import re
 import requests
 import unittest
+import os
 
 
 def find_emails(source, from_file=False, from_url=False):
-
     # Регулярное выражение для email-адресов
     email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
 
@@ -25,6 +25,7 @@ def find_emails(source, from_file=False, from_url=False):
     emails = re.findall(email_regex, content)
     return emails
 
+
 # Пример использования
 if __name__ == "__main__":
     user_input = input("Введите текст, URL или путь к файлу: ")
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     for email in emails:
         print(email)
 
+
 class TestFindEmails(unittest.TestCase):
     def test_find_emails_in_string(self):
         text = "Контакты: test.email@example.com, info@domain.org, fake-email@fake."
@@ -49,30 +51,21 @@ class TestFindEmails(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_find_emails_in_file(self):
-        with open("test_file.txt", "w", encoding="utf-8") as file:
+        temp_file = "test_file.txt"
+        with open(temp_file, "w", encoding="utf-8") as file:
             file.write("Email: example@mail.com and admin@site.net.")
-        result = find_emails("test_file.txt", from_file=True)
-        expected = ["example@mail.com", "admin@site.net"]
-        self.assertEqual(result, expected)
+        try:
+            result = find_emails(temp_file, from_file=True)
+            expected = ["example@mail.com", "admin@site.net"]
+            self.assertEqual(result, expected)
+        finally:
+            os.remove(temp_file)
 
     def test_find_emails_on_webpage(self):
-        url = "https://www.example.com"
-        mock_html = "<html><body>Email: contact@website.com</body></html>"
-
-        # Мокирование запроса
-        def mock_get(*args, **kwargs):
-            class MockResponse:
-                def __init__(self, text):
-                    self.text = text
-
-                def raise_for_status(self):
-                    pass
-
-            return MockResponse(mock_html)
-
-        requests.get = mock_get
+        # Используйте реальный URL, например:
+        url = "https://www.example.com"  # Например, замените на URL вашей веб-страницы
         result = find_emails(url, from_url=True)
-        expected = ["contact@website.com"]
+        expected = ["contact@website.com"]  # Этот результат будет зависеть от содержимого страницы
         self.assertEqual(result, expected)
 
 
